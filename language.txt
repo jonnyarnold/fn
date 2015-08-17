@@ -2,6 +2,8 @@
 
 primary => assignment
 primary => value
+primary => useExpr
+primary => importExpr
 
 assignment => :identifier :eq definition
 assignment => :identifier :eq functionPrototype
@@ -30,9 +32,9 @@ parameter => functionPrototype
 
 infixOp => value :plus value
 
+useExpr => :use :identifier
 
-
-
+importExpr => :import :identifier
 
 
 

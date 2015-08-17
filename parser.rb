@@ -8,6 +8,9 @@ FunctionPrototypeExpr = Struct.new(:args, :body)
 
 AssignmentExpr = Struct.new(:reference, :definition)
 
+UseExpr = Struct.new(:name)
+ImportExpr = Struct.new(:name)
+
 class Parser
 
   def self.parse(tokens)
@@ -70,6 +73,10 @@ class Parser
       parse_value
     when :bracket_open
       parse_brackets
+    when :use
+      parse_use
+    when :import
+      parse_import
     else
       # For development only! This should just fail.
       puts "You cannot start an expression with #{current_token}!"
@@ -308,19 +315,37 @@ class Parser
   end
 
   def parse_number
-    expr = NumberExpr.new(current_token.value)
-    shift_token!
-    expr
+    shift_token_into!(NumberExpr)
   end
 
   def parse_string
-    expr = StringExpr.new(current_token.value)
-    shift_token!
-    expr
+    shift_token_into!(StringExpr)
   end
 
   def parse_identifier
-    expr = IdentifierExpr.new(current_token.value)
+    shift_token_into!(IdentifierExpr)
+  end
+
+  def parse_use
+    shift_token! # Eat :use
+    unless current_token.type == :identifier
+      fail "Expecting identifier for use statement, got #{current_token.type}"
+    end
+
+    shift_token_into!(UseExpr)
+  end
+
+  def parse_import
+    shift_token! # Eat :import
+    unless current_token.type == :identifier
+      fail "Expecting identifier for import statement, got #{current_token.type}"
+    end
+
+    shift_token_into!(ImportExpr)
+  end
+
+  def shift_token_into!(exprClass)
+    expr = exprClass.new(current_token.value)
     shift_token!
     expr
   end

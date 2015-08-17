@@ -32,10 +32,10 @@ Sayings = (sayingList) {
 
 
 # server.f
-# use Sayings
+use Sayings
 
 Server = (port) {
-  # import HTTPServer # adds get, start!
+  import HTTPServer # adds get, start!
 
   sayings = Sayings.fromFile("sayings.txt")
 
@@ -46,7 +46,7 @@ Server = (port) {
 
 
 # main.f
-# use Server
+use Server
 
 port = 4000
 Server(port)#.start!
