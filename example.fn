@@ -1,0 +1,54 @@
+# v1.f
+x = 4
+y = "Boing"
+
+123
+"Hello"
+add = (x, y) { x + y }
+diff = (x, y) {
+  z = y - x
+  z
+}
+
+cube = (x) { y = x*x*x; y }
+
+add(2, 3)
+
+3 + 2
+(3 + 2)
+
+4 * (3 + 2)
+
+# EVERYTHING IS AN IMMUTABLE OBJECT
+
+# sayings.f
+# Sayings = (sayingList): {
+#
+#   one = ():
+#     sayingList.one
+#
+# Sayings.fromFile = (fileName):
+#   File.read(fileName)
+#   |> Sayings
+
+
+# server.f
+# use Sayings
+#
+# Server = (port || 4000):
+#   import HTTPServer # adds get, start!
+#
+#   sayings = Sayings.fromFile "sayings.txt"
+#
+#   get "/" ():
+#     File.read "hello.html"
+#
+#   get "/saying" ():
+#     sayings.one
+
+
+# main.f
+# use Server
+#
+# port = 4000
+# Server(4000).start!

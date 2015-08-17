@@ -1,0 +1,84 @@
+=== V1 ===
+
+primary => assignment
+primary => value
+
+assignment => :identifier :eq definition
+assignment => :identifier :eq functionPrototype
+
+FunctionPrototypeExpr => :bracket_open argumentList* :bracket_close :block_open primary+ :block_close
+
+argumentList => :identifier
+argumentList => :identifier :comma argumentList
+
+value => :identifier
+value => literal
+value => functionCall
+value => :bracket_open value :bracket_close
+value => infixOp
+
+literal => :number
+literal => :string
+
+functionCall => :identifier :bracket_open parameterList* :bracket_close
+
+parameterList => value
+parameterList => value :comma parameterList
+
+infixOp => value :plus value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=====
+
+
+primary => assignment
+primary => value
+primary => :bracket_open primary :bracket_close
+
+assignment => reference :eq functionPrototype
+assignment => reference :eq value
+
+reference => :identifier
+reference => :identifier :property reference
+
+functionPrototype => :bracket_open argumentDefinition* :bracket_close :block_open primary+ :block_close
+
+argumentDefinition => :identifier
+argumentDefinition => :identifier :or reference
+argumentDefinition => :identifier :or literal
+
+value => reference
+value => literal
+value => functionCall
+
+valueOrDefinition => value
+valueOrDefinition => definition
+
+functionCall => reference
+functionCall => reference valueOrDefinition*
+functionCall => reference :bracket_open valueOrDefinition* :bracket_close
+functionCall => literal :property functionCall
+functionCall => functionCall :property functionCall
+
+literal => :number
+literal => :string
+
+parse_primary = {
+  :identifier => { # [assignment, functionCall]
+    parse_reference
+    :eq => assignment
+    else functionCall
+  }
+}
