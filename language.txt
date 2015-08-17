@@ -6,7 +6,7 @@ primary => value
 assignment => :identifier :eq definition
 assignment => :identifier :eq functionPrototype
 
-FunctionPrototypeExpr => :bracket_open argumentList* :bracket_close :block_open primary+ :block_close
+functionPrototype => :bracket_open argumentList* :bracket_close :block_open primary+ :block_close
 
 argumentList => :identifier
 argumentList => :identifier :comma argumentList
@@ -22,8 +22,11 @@ literal => :string
 
 functionCall => :identifier :bracket_open parameterList* :bracket_close
 
-parameterList => value
-parameterList => value :comma parameterList
+parameterList => parameter
+parameterList => parameter :comma parameterList
+
+parameter => value
+parameter => functionPrototype
 
 infixOp => value :plus value
 

@@ -22,11 +22,10 @@ add(2, 3)
 # EVERYTHING IS AN IMMUTABLE OBJECT
 
 # sayings.f
-# Sayings = (sayingList): {
-#
-#   one = ():
-#     sayingList.one
-#
+Sayings = (sayingList) {
+  sample = () { sayingList.sample }
+}
+
 # Sayings.fromFile = (fileName):
 #   File.read(fileName)
 #   |> Sayings
@@ -34,21 +33,20 @@ add(2, 3)
 
 # server.f
 # use Sayings
-#
-# Server = (port || 4000):
-#   import HTTPServer # adds get, start!
-#
-#   sayings = Sayings.fromFile "sayings.txt"
-#
-#   get "/" ():
-#     File.read "hello.html"
-#
-#   get "/saying" ():
-#     sayings.one
+
+Server = (port) {
+  # import HTTPServer # adds get, start!
+
+  sayings = Sayings.fromFile("sayings.txt")
+
+  get("/", () { File.read("hello.html") })
+
+  get("/saying", () { sayings.one })
+}
 
 
 # main.f
 # use Server
-#
-# port = 4000
-# Server(4000).start!
+
+port = 4000
+Server(port)#.start!

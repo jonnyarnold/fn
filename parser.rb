@@ -158,8 +158,8 @@ class Parser
     # Get the parameter list
     parameter_list = []
     while(current_token.type != :bracket_close) do
-      value_expr = parse_value
-      parameter_list.push(value_expr)
+      parameter_expr = parse_parameter
+      parameter_list.push(parameter_expr)
 
       case current_token.type
       when :comma
@@ -174,6 +174,15 @@ class Parser
     shift_token! # Eat :bracket_close
 
     parameter_list
+  end
+
+  def parse_parameter
+    case current_token.type
+    when :bracket_open
+      parse_function_definition
+    else
+      parse_value
+    end
   end
 
   def parse_assignment

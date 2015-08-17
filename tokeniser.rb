@@ -12,7 +12,6 @@ GRAMMAR = {
   :import => /\Aimport/,
   :eq => /\A\=/,
   :pipe => /\A\|\>/,
-  :property => /\A\./,
 
   # Infix operators
   :infix_operator => /\A(\+|\-|\*|\/)/,
@@ -33,14 +32,15 @@ GRAMMAR = {
   # :identifier should be below all other tokens.
   # This saves me having to exclude all of the other tokens
   # in this regex.
-  :identifier => /\A([^\s\.\(\)\:\,\+]+)/,
+  :identifier => /\A([^\s\(\)\:\,\+]+)/,
 
   :space => /\A[\s\n]+/
 }
 
 SPECIAL_BEHAVIOURS = {
   # When we encounter a space, don't add a token.
-  :space => lambda { |tokens| tokens.pop; tokens }
+  :space => lambda { |tokens| tokens.pop; tokens },
+  :comment => lambda { |tokens| tokens.pop; tokens }
 }
 
 class Token
