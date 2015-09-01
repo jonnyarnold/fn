@@ -10,11 +10,9 @@ GRAMMAR = {
   # Reserved words/symbols
   :use => /\Ause/,
   :import => /\Aimport/,
-  :eq => /\A\=/,
-  :pipe => /\A\|\>/,
 
   # Infix operators
-  :infix_operator => /\A(\+|\-|\*|\/)/,
+  :infix_operator => /\A(\+|\-|\*|\/|\.|\=|\|\>)/,
 
   # Blocks
   :block_open => /\A\{/,
@@ -27,12 +25,12 @@ GRAMMAR = {
 
   # Value literals
   :string => /\A\"([^\"]*)\"/,
-  :number => /\A([0-9\.]+)/,
+  :number => /\A([0-9]+)/,
 
   # :identifier should be below all other tokens.
   # This saves me having to exclude all of the other tokens
   # in this regex.
-  :identifier => /\A([^\s\(\)\:\,\+]+)/,
+  :identifier => /\A([^\s\(\)\:\,\+\-\*\/\.0-9]+)/,
 
   :space => /\A[\s\n]+/
 }
@@ -81,7 +79,6 @@ class Tokeniser
         input.match(re) do |matches|
           token = Token.new(token_type, matches.captures[0])
           tokens.push(token)
-          # puts token
 
           if SPECIAL_BEHAVIOURS.key? token_type
             tokens = SPECIAL_BEHAVIOURS[token_type].call(tokens)

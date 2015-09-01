@@ -6,10 +6,11 @@ IdentifierExpr = Struct.new(:name)
 FunctionCallExpr = Struct.new(:reference, :args)
 FunctionPrototypeExpr = Struct.new(:args, :body)
 
-AssignmentExpr = Struct.new(:reference, :definition)
-
 UseExpr = Struct.new(:name)
 ImportExpr = Struct.new(:name)
+
+# Strongest to weakest
+INFIX_PRECEDENCE = ['.', '=', '|>', '*', '/', '+', '-']
 
 class Parser
 
@@ -33,6 +34,11 @@ class Parser
     @tokens[ahead]
   end
 
+  def peek_after_next(token_type)
+    next_idx = @tokens.find_index { |t| t.type == token_type }
+    @tokens[next_idx + 1]
+  end
+
   def file_end?
     @tokens.empty?
   end
@@ -42,11 +48,11 @@ class Parser
     @primaries = []
 
     @indent_stack = [0]
-    shift_token!
 
     loop do
       break if current_token.nil?
       expr = parse_primary
+      puts expr
       @primaries.push(expr)
     end
 
@@ -55,24 +61,8 @@ class Parser
 
   def parse_primary
     expr = case current_token.type
-    when :identifier
-      # This could be:
-      #   :identifier [value]
-      #   :identifier :eq ... [assignment]
-      #   :identifier :bracket_open ... [functionCall]
-      # So we check to see what we have next.
-      case peek_token.type
-      when :eq
-        parse_assignment
-      when :bracket_open
-        parse_function_call
-      else
-        parse_value
-      end
-    when :number, :string
+    when :identifier, :number, :string, :bracket_open
       parse_value
-    when :bracket_open
-      parse_brackets
     when :use
       parse_use
     when :import
@@ -91,28 +81,6 @@ class Parser
     expr
   end
 
-  # def parse_reference(parent = nil)
-  #   unless current_token.type == :identifier
-  #     fail "WTF? Called parse_identifier with #{current_token}!"
-  #   end
-  #
-  #   name = current_token.value
-  #   if parent.nil?
-  #     expr = ReferenceExpr.new(name)
-  #   else
-  #     expr = PropertyReferenceExpr.new(parent, name)
-  #   end
-  #
-  #   shift_token! # Eat :identifier
-  #
-  #   if current_token.type == :property
-  #     shift_token! # Eat :property
-  #     expr = parse_reference(expr)
-  #   end
-  #
-  #   expr
-  # end
-
   def parse_value
     lhs =
       case current_token.type
@@ -126,21 +94,50 @@ class Parser
       when :number, :string
         parse_literal
       when :bracket_open
-        parse_brackets
+        # This could be a bracketed value
+        # or a function definition.
+        #
+        # Check for block_open at the end of the bracket
+        after_bracket_close = peek_after_next(:bracket_close)
+
+        case after_bracket_close.type
+        when :block_open
+          parse_function_definition
+        else
+          parse_brackets
+        end
       else
         fail "parse_value called on non-value #{current_token}"
       end
 
     # Look-ahead for binary operations
-    case current_token.type
-    when :infix_operator
+    parse_infix_rhs(-1, lhs)
+  end
+
+  def parse_infix_rhs(precedence, lhs)
+    loop do
+      before_parse_precedence = current_precedence
+      return lhs if before_parse_precedence < precedence
+
       op = current_token.value
-      shift_token! # Eat :plus
+      shift_token! # Eat :infix_operator
+
       rhs = parse_value
-      FunctionCallExpr.new(IdentifierExpr.new(op), [lhs, rhs])
-    else
-      lhs
+
+      # Who has more precedence?
+      if before_parse_precedence < current_precedence
+        rhs = parse_infix_rhs(precedence + 0.1, rhs)
+      end
+
+      lhs = FunctionCallExpr.new(IdentifierExpr.new(op), [lhs, rhs])
     end
+
+    lhs
+  end
+
+  def current_precedence
+    return -2 unless current_token && current_token.type == :infix_operator
+    INFIX_PRECEDENCE.find_index(current_token.value) || fail("Unknown precedence for #{current_token.type}")
   end
 
   def parse_function_call
@@ -152,7 +149,7 @@ class Parser
     shift_token! # Eat :identifier
 
     parameter_list = parse_parameter_list
-    FunctionPrototypeExpr.new(identifier_expr, parameter_list)
+    FunctionCallExpr.new(identifier_expr, parameter_list)
   end
 
   def parse_parameter_list

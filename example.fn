@@ -1,4 +1,7 @@
 # v1.f
+
+3 + 2 * 1
+
 x = 4
 y = "Boing"
 
@@ -16,8 +19,8 @@ add(2, 3)
 
 3 + 2
 (3 + 2)
-
 4 * (3 + 2)
+9 + add(2, 3)
 
 # EVERYTHING IS AN IMMUTABLE OBJECT
 
@@ -49,4 +52,5 @@ Server = (port) {
 use Server
 
 port = 4000
-Server(port)#.start!
+3.times()
+Server(port).start!()

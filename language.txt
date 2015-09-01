@@ -5,19 +5,17 @@ primary => value
 primary => useExpr
 primary => importExpr
 
-assignment => :identifier :eq definition
-assignment => :identifier :eq functionPrototype
-
-functionPrototype => :bracket_open argumentList* :bracket_close :block_open primary+ :block_close
-
-argumentList => :identifier
-argumentList => :identifier :comma argumentList
-
 value => :identifier
 value => literal
 value => functionCall
 value => :bracket_open value :bracket_close
 value => infixOp
+value => functionPrototype
+
+functionPrototype => :bracket_open argumentList* :bracket_close :block_open primary+ :block_close
+
+argumentList => :identifier
+argumentList => :identifier :comma argumentList
 
 literal => :number
 literal => :string
@@ -30,7 +28,7 @@ parameterList => parameter :comma parameterList
 parameter => value
 parameter => functionPrototype
 
-infixOp => value :plus value
+infixOp => value :infix_operator value
 
 useExpr => :use :identifier
 
