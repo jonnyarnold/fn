@@ -30,10 +30,19 @@ diff(5, 7)
 obj = {
   a = 3
   b = "Hello"
+  c = (x) { a + x }
 }
 
 obj.a
 obj.b
+obj.c(3)
+
+inc = (incBy) {
+  (value) { value + incBy }
+}
+
+inctwo = inc(2)
+inctwo(2)
 
 # EVERYTHING IS AN IMMUTABLE OBJECT
 
@@ -65,6 +74,5 @@ Server = (port) {
 use Server
 
 port = 4000
-# 3.times()
 Server(port)
 Server(port).start!()
