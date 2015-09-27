@@ -11,4 +11,4 @@ A minimalist functional programming language.
 
 ## Current Status
 
-If you run `ruby interpreter.rb` you will get an Abstract Syntax Tree of the code in `example.fn`.
+If you run `ruby interpreter.rb` the file `example.fn` will be run.
