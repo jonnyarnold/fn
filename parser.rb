@@ -9,6 +9,8 @@ FunctionPrototypeExpr = Struct.new(:args, :body)
 UseExpr = Struct.new(:name)
 ImportExpr = Struct.new(:name)
 
+BlockExpr = Struct.new(:body)
+
 # Strongest to weakest
 INFIX_PRECEDENCE = ['.', '=', '|>', '*', '/', '+', '-']
 
@@ -61,7 +63,7 @@ class Parser
 
   def parse_primary
     expr = case current_token.type
-    when :identifier, :number, :string, :bracket_open
+    when :identifier, :number, :string, :bracket_open, :block_open
       parse_value
     when :use
       parse_use
@@ -106,6 +108,8 @@ class Parser
         else
           parse_brackets
         end
+      when :block_open
+        parse_block
       else
         fail "parse_value called on non-value #{current_token}"
       end
@@ -309,6 +313,10 @@ class Parser
     shift_token!
 
     expr
+  end
+
+  def parse_block
+    BlockExpr.new(parse_function_body)
   end
 
   def parse_number

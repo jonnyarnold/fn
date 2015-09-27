@@ -11,6 +11,9 @@ value => functionCall
 value => :bracket_open value :bracket_close
 value => infixOp
 value => functionPrototype
+value => block
+
+block => :block_open primary+ :block_close
 
 functionPrototype => :bracket_open argumentList* :bracket_close :block_open primary+ :block_close
 

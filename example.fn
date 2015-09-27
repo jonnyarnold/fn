@@ -21,6 +21,13 @@ add(2, 3)
 (3 + 2)
 4 * (3 + 2)
 9 + add(2, 3)
+obj = {
+  a = 3
+  b = "Hello"
+}
+
+obj.a
+obj.b
 
 # EVERYTHING IS AN IMMUTABLE OBJECT
 
