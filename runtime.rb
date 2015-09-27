@@ -12,6 +12,7 @@ class Block
 
   def initialize(defined_values = nil)
     @defined_values = defined_values || GLOBALS
+    @defined_values['self'] = self
 
     # Time for a hack!
     if defined_values.nil?

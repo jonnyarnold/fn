@@ -54,7 +54,6 @@ class Parser
     loop do
       break if current_token.nil?
       expr = parse_primary
-      puts expr
       @primaries.push(expr)
     end
 
@@ -87,6 +86,9 @@ class Parser
     lhs =
       case current_token.type
       when :identifier
+        # Guard against end of script
+        return parse_identifier if peek_token.nil?
+
         case peek_token.type
         when :bracket_open
           parse_function_call
