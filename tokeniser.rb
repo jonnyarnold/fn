@@ -30,7 +30,7 @@ GRAMMAR = {
   # :identifier should be below all other tokens.
   # This saves me having to exclude all of the other tokens
   # in this regex.
-  :identifier => /\A([^\s\(\)\:\,\+\-\*\/\.0-9]+)/,
+  :identifier => /\A([^\s\(\)\:\,\;\+\-\*\/\.0-9]+)/,
 
   :space => /\A[\s\n]+/
 }
