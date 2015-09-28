@@ -1,5 +1,8 @@
+class FnRunError < StandardError
+end
+
 class Block
-  attr_reader :defined_values
+  attr_reader :defined_values, :call_proc
 
   GLOBALS = {
     '+' => lambda { |a,b| a + b },
@@ -13,6 +16,7 @@ class Block
   def initialize(defined_values = nil, call_proc = nil)
     set_defined_values(defined_values)
     @call_proc = call_proc
+    @scope_values = {}
   end
 
   def set_defined_values(defined_values)
@@ -30,9 +34,34 @@ class Block
     end
   end
 
+  def to_s(level=0)
+    level_spaces = ' ' * level
+    out = ''
+
+    out += "() " unless @call_proc.nil?
+
+    if @scope_values.length == 0
+      out += '{}'
+      return out
+    end
+
+    out += "{\n" + level_spaces
+    @scope_values.each do |k,v|
+      if v.is_a? Block
+        out += "  #{k} = #{v.to_s(level + 2)}\n" + level_spaces
+      else
+        out += "  #{k} = #{v}\n" + level_spaces
+      end
+    end
+    out += '}'
+
+    out
+  end
+
   def assign(id, value)
-    raise "Cannot redefine #{id}!" if @defined_values[id]
+    raise FnRunError.new("Cannot redefine #{id}!") if @defined_values[id]
     @defined_values[id] = value
+    @scope_values[id] = value
   end
 
   def call(*args)
@@ -66,7 +95,7 @@ class Block
       expr.value.to_s
     when 'IdentifierExpr'
       # Identifier call!
-      @defined_values[expr.name] || puts("What is #{expr.name}?")
+      @defined_values[expr.name] || raise(FnRunError.new("Unknown identifier #{expr.name}"))
     when 'FunctionCallExpr'
       evaluate_function_call(expr)
     when 'FunctionPrototypeExpr'
@@ -90,22 +119,30 @@ class Block
     # Special case: dereference
     elsif name == '.'
       scope = evaluate(expr.args[0])
+      raise FnRunError.new("Non-block on left-hand side of `.`") unless scope.is_a? Block
+
       scope.evaluate(expr.args[1])
     else
       f = @defined_values[expr.reference.name]
-
-      puts "What is #{name}?" unless f
-      puts "#{name} is not a function" unless f.respond_to? :call
+      raise FnRunError.new("#{name} is not a function") unless callable?(f)
 
       f.call(*expr.args.map { |arg| evaluate(arg) })
     end
+  end
+
+  # Callable is:
+  #  - A lambda (built-in)
+  #  - A Block with a call_proc
+  def callable?(obj)
+    # Both of these objects response do call
+    return true if obj.respond_to? :call
   end
 
   def evaluate_function_prototype(expr)
     Block.new(@defined_values, lambda do |*call_args|
       arg_ids = expr.args
       unless arg_ids.length == call_args.length
-        puts "Expected #{arg_ids.length} args, got #{call_args.length}"
+        raise FnRunError.new("Expected #{arg_ids.length} args, got #{call_args.length}")
       end
 
       body = expr.body

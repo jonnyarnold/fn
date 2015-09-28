@@ -13,5 +13,10 @@ runtime = Block.new
 loop do
   print '> '
   line = gets.chomp
-  puts execute(runtime, line)
+
+  begin
+    puts execute(runtime, line)
+  rescue FnRunError => e
+    puts e
+  end
 end
