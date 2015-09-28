@@ -10,7 +10,12 @@ class Block
     # '.' is defined in .evaluate
   }
 
-  def initialize(defined_values = nil)
+  def initialize(defined_values = nil, call_proc = nil)
+    set_defined_values(defined_values)
+    @call_proc = call_proc
+  end
+
+  def set_defined_values(defined_values)
     @defined_values = defined_values || GLOBALS
     @defined_values['self'] = self
 
@@ -23,13 +28,15 @@ class Block
         }))
       })
     end
-
-    @defined_values
   end
 
   def assign(id, value)
     raise "Cannot redefine #{id}!" if @defined_values[id]
     @defined_values[id] = value
+  end
+
+  def call(*args)
+    @call_proc.call(*args)
   end
 
   def evaluate_return_last(exprs)
@@ -95,7 +102,7 @@ class Block
   end
 
   def evaluate_function_prototype(expr)
-    lambda do |*call_args|
+    Block.new(@defined_values, lambda do |*call_args|
       arg_ids = expr.args
       unless arg_ids.length == call_args.length
         puts "Expected #{arg_ids.length} args, got #{call_args.length}"
@@ -113,7 +120,7 @@ class Block
 
       # Evaluate the function
       function_scope.evaluate_return_last(expr.body)
-    end
+    end)
   end
 
   def evaluate_block(expr)
