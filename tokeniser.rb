@@ -10,9 +10,7 @@ GRAMMAR = {
   # Reserved words/symbols
   :use => /\Ause/,
   :import => /\Aimport/,
-  :if => /\Aif/,
-  :unless => /\Aunless/,
-  :else => /\Aelse/,
+  :when => /\Awhen/,
 
   # Infix operators
   :infix_operator => /\A(\+|\-|\*|\/|\.|\=|\|\>)/,

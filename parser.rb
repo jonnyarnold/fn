@@ -11,7 +11,8 @@ ImportExpr = Struct.new(:name)
 
 BlockExpr = Struct.new(:body)
 
-ConditionalExpr = Struct.new(:condition, :true_body, :false_body)
+ConditionalExpr = Struct.new(:branches)
+ConditionalBranchExpr = Struct.new(:condition, :body)
 
 # Strongest to weakest
 INFIX_PRECEDENCE = ['.', '=', '|>', '*', '/', '+', '-']
@@ -64,7 +65,7 @@ class Parser
 
   def parse_primary
     expr = case current_token.type
-    when :identifier, :number, :string, :bracket_open, :block_open, :if, :unless
+    when :identifier, :number, :string, :bracket_open, :block_open, :when
       parse_value
     when :use
       parse_use
@@ -114,10 +115,8 @@ class Parser
         end
       when :block_open
         parse_block
-      when :if
-        parse_if
-      when :unless
-        parse_unless
+      when :when
+        parse_when
       else
         fail "parse_value called on non-value #{current_token}"
       end
@@ -285,42 +284,27 @@ class Parser
     expr_list
   end
 
-  def parse_if
-    unless current_token.type == :if
-      fail "WTF? Expecting if, got #{current_token} in if statement!"
+  def parse_when
+    unless current_token.type == :when
+      fail "WTF? Expecting when, got #{current_token} in when statement!"
+    end
+    shift_token! # Eat :when
+
+    unless current_token.type == :block_open
+      fail "WTF? Expecting {, got #{current_token} in when statement!"
+    end
+    shift_token! # Eat :block_open
+
+    branches = []
+    while current_token.type != :block_close
+      condition = parse_value
+      block = parse_block
+
+      branches << ConditionalBranchExpr.new(condition, block)
     end
 
-    shift_token! # Eat :if
-
-    condition = parse_value
-    true_block = parse_block
-
-    # Check for an :else
-    if current_token.type == :else
-      shift_token! # Eat :else
-      false_block = parse_block
-    end
-
-    ConditionalExpr.new(condition, true_block, false_block)
-  end
-
-  def parse_unless
-    unless current_token.type == :unless
-      fail "WTF? Expecting unless, got #{current_token} in unless statement!"
-    end
-
-    shift_token! # Eat :unless
-
-    condition = parse_value
-    false_block = parse_block # If the condition is false, run the first block
-
-    # Check for an :else
-    if current_token.type == :else
-      shift_token! # Eat :else
-      true_block = parse_block
-    end
-
-    ConditionalExpr.new(condition, true_block, false_block)
+    shift_token! # Eat :block_close
+    ConditionalExpr.new(branches)
   end
 
   def parse_literal

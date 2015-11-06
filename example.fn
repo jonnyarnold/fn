@@ -17,12 +17,18 @@ diff = (x, y) {
 }
 
 say = (enter) {
-  if enter { "Hello" } else { "Goodbye" }
+  when {
+    enter { "Hello" }
+    else { "Goodbye" }
+  }
 }
 say(true)
 say(false)
 
-bool = unless true { 0 } else { 1 }
+bool = when {
+  true { 0 }
+  else { 1 }
+}
 
 cube = (x) { z = x*x*x; z }
 
