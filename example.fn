@@ -16,14 +16,14 @@ diff = (x, y) {
   z
 }
 
-say = (enter) {
+guess = (num) {
   when {
-    enter { "Hello" }
-    true { "Goodbye" }
+    num eq 42 { "WIN" }
+    true      { "LOSE" }
   }
 }
-say(true)
-say(false)
+guess(21)
+guess(42)
 
 bool = when {
   true { 0 }
@@ -62,7 +62,14 @@ inc = (incBy) {
 inctwo = inc(2)
 inctwo(2)
 
-# EVERYTHING IS AN IMMUTABLE OBJECT
+recursive = (n) {
+  when {
+    n eq 0 { 0 }
+    true { n + recursive(n-1) }
+  }
+}
+
+recursive(3)
 
 # sayings.f
 Sayings = (sayingList) {

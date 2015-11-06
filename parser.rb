@@ -16,7 +16,7 @@ ConditionalExpr = Struct.new(:branches)
 ConditionalBranchExpr = Struct.new(:condition, :body)
 
 # Strongest to weakest
-INFIX_PRECEDENCE = ['.', '=', 'and', 'or', '*', '/', '+', '-']
+INFIX_PRECEDENCE = ['.', '=', 'eq', 'and', 'or', '*', '/', '+', '-']
 
 class Parser
 

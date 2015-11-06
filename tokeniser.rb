@@ -11,9 +11,10 @@ GRAMMAR = {
   :use => /\Ause/,
   :import => /\Aimport/,
   :when => /\Awhen/,
+  :loop => /\Aloop/,
 
   # Infix operators
-  :infix_operator => /\A(\+|\-|\*|\/|\.|\=|or|and)/,
+  :infix_operator => /\A(\+|\-|\*|\/|\.|\=|eq|or|and)/,
 
   # Blocks
   :block_open => /\A\{/,

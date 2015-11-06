@@ -11,6 +11,7 @@ class Block
     '-' => lambda { |a,b| a - b },
     'and' => lambda { |a,b| a && b },
     'or' => lambda { |a,b| a || b },
+    'eq' => lambda { |a,b| a == b },
     # '=' is defined in .evaluate
     # '.' is defined in .evaluate
   }
