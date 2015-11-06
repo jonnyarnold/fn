@@ -1,75 +1,14 @@
 # v1.f
 
-3 + 2 * 1
+l = [1, "two", true]
+l(1) # => "two"
+l.first # => 1
+l.last # => true
 
-x = 4
-x
-
-y = "Boing"
-y
-
-123
-"Hello"
-add = (x, y) { x + y }
-diff = (x, y) {
-  z = y - x
-  z
-}
-
-guess = (num) {
-  when {
-    num eq 42 { "WIN" }
-    true      { "LOSE" }
-  }
-}
-guess(21)
-guess(42)
-
-bool = when {
-  true { 0 }
-}
-
-true and true
-true or false
-false or true
-1 or false    # => 1
-
-cube = (x) { z = x*x*x; z }
-
-add(2, 3)
-
-3 + 2
-(3 + 2)
-4 * (3 + 2)
-9 + add(2, 3)
-cube(3)
-diff(5, 7)
-
-obj = {
-  a = 3
-  b = "Hello"
-  c = (x) { a + x }
-}
-
-obj.a
-obj.b
-obj.c(3)
-
-inc = (incBy) {
-  (value) { value + incBy }
-}
-
-inctwo = inc(2)
-inctwo(2)
-
-recursive = (n) {
-  when {
-    n eq 0 { 0 }
-    true { n + recursive(n-1) }
-  }
-}
-
-recursive(3)
+nums = [1,2,3]
+nums.each((i) {
+  print(i)
+})
 
 # sayings.f
 Sayings = (sayingList) {

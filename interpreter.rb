@@ -7,7 +7,5 @@ tree = Parser.parse(tokens)
 
 runtime = Block.new
 tree.each do |expr|
-  puts expr
-  puts runtime.evaluate(expr)
-  puts
+  runtime.evaluate(expr)
 end

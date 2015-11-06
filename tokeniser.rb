@@ -11,7 +11,6 @@ GRAMMAR = {
   :use => /\Ause/,
   :import => /\Aimport/,
   :when => /\Awhen/,
-  :loop => /\Aloop/,
 
   # Infix operators
   :infix_operator => /\A(\+|\-|\*|\/|\.|\=|eq|or|and)/,
@@ -20,8 +19,8 @@ GRAMMAR = {
   :block_open => /\A\{/,
   :block_close => /\A\}/,
 
-  #:list_open => /\A\[/,
-  #:list_close => /\A\]/,
+  :list_open => /\A\[/,
+  :list_close => /\A\]/,
 
   # Value literals
   :string => /\A\"([^\"]*)\"/,

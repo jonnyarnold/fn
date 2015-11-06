@@ -2,6 +2,9 @@
 NumberExpr = Struct.new(:value)
 StringExpr = Struct.new(:value)
 BooleanExpr = Struct.new(:value)
+
+ListExpr = Struct.new(:values)
+
 IdentifierExpr = Struct.new(:name)
 
 FunctionCallExpr = Struct.new(:reference, :args)
@@ -118,6 +121,8 @@ class Parser
         parse_block
       when :when
         parse_when
+      when :list_open
+        parse_list
       else
         fail "parse_value called on non-value #{current_token}"
       end
@@ -306,6 +311,31 @@ class Parser
 
     shift_token! # Eat :block_close
     ConditionalExpr.new(branches)
+  end
+
+  def parse_list
+    unless current_token.type == :list_open
+      fail "WTF? Expecting [, got #{current_token} in list statement!"
+    end
+    shift_token! # Eat :list_open
+
+    values = []
+    while(current_token.type != :list_close) do
+      value = parse_value
+      values << value
+
+      case current_token.type
+      when :comma
+        shift_token!
+      when :list_close
+        break
+      else
+        fail "Expected ',' or ']', got #{current_token}!"
+      end
+    end
+    shift_token! # Eat :list_close
+
+    ListExpr.new(values)
   end
 
   def parse_literal

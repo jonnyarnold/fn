@@ -12,6 +12,7 @@ class Block
     'and' => lambda { |a,b| a && b },
     'or' => lambda { |a,b| a || b },
     'eq' => lambda { |a,b| a == b },
+    'print' => lambda { |x| puts x.to_s },
     # '=' is defined in .evaluate
     # '.' is defined in .evaluate
   }
@@ -98,6 +99,8 @@ class Block
       expr.value.to_s
     when 'BooleanExpr'
       expr.value == 'true'
+    when 'ListExpr'
+      evaluate_list(expr)
     when 'IdentifierExpr'
       # Identifier call!
       raise(FnRunError.new("Unknown identifier #{expr.name}")) unless @defined_values.key? expr.name
@@ -115,6 +118,11 @@ class Block
     else
       puts "I can't evaluate a #{expr.class}!"
     end
+  end
+
+  def evaluate_list(expr)
+    values = expr.values.map { |v| evaluate(v) }
+    List.new(values)
   end
 
   def evaluate_function_call(expr)
@@ -184,4 +192,38 @@ class Block
     end
   end
 
+end
+
+class List < Block
+
+  def initialize(values)
+    @values = values
+
+    super(
+      nil,
+      # If called as a function, a list will return the value
+      # at the given index.
+      lambda { |i| @values[i] }
+    )
+
+    @defined_values.merge!(
+      # List built-ins
+      'first' => @values.first,
+      'last' => @values.last,
+      'each' => lambda { |fn| each(fn) },
+    )
+  end
+
+  def to_s
+    @values.to_s
+  end
+
+  def each(fn)
+    @values.each do |v|
+      fn.call(v)
+    end
+
+    # We return an Empty Block to avoid re-printing the values
+    Block.new
+  end
 end

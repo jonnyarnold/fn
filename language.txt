@@ -13,6 +13,9 @@ value => infixOp
 value => functionPrototype
 value => block
 value => conditional
+value => list
+
+list => :list_open value* :list_close
 
 conditional => :when :block_open conditionalBranch+ :block_close
 conditionalBranch => value block
