@@ -5,6 +5,7 @@ class Block
   attr_reader :defined_values, :call_proc
 
   GLOBALS = {
+    '!' => lambda { |a| !a },
     '+' => lambda { |a,b| a + b },
     '*' => lambda { |a,b| a * b },
     '/' => lambda { |a,b| a / b },
