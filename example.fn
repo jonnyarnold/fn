@@ -19,7 +19,7 @@ diff = (x, y) {
 say = (enter) {
   when {
     enter { "Hello" }
-    else { "Goodbye" }
+    true { "Goodbye" }
   }
 }
 say(true)
@@ -27,7 +27,6 @@ say(false)
 
 bool = when {
   true { 0 }
-  else { 1 }
 }
 
 cube = (x) { z = x*x*x; z }

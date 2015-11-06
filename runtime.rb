@@ -8,10 +8,6 @@ class Block
     'true' => true,
     'false' => false,
 
-    # So this is a fun hack.
-    # We set else to true so it will always run in conditionals.
-    'else' => true,
-
     '+' => lambda { |a,b| a + b },
     '*' => lambda { |a,b| a * b },
     '/' => lambda { |a,b| a / b },
