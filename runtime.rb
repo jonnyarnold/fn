@@ -95,7 +95,7 @@ class Block
   def evaluate(expr)
     case expr.class.name
     when 'NumberExpr'
-      expr.value.to_i
+      expr.value.to_f
     when 'StringExpr'
       expr.value.to_s
     when 'BooleanExpr'

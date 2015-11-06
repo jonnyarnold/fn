@@ -1,5 +1,6 @@
 GRAMMAR = {
   :comment => /\A\#([^\n]*)/,
+  :space => /\A[\s\n]+/,
 
   :bracket_open => /\A\(/,
   :bracket_close => /\A\)/,
@@ -24,15 +25,13 @@ GRAMMAR = {
 
   # Value literals
   :string => /\A\"([^\"]*)\"/,
-  :number => /\A([0-9]+)/,
+  :number => /\A([0-9]+(?:\.[0-9]+)?)/,
   :boolean => /\A(true|false)/,
 
   # :identifier should be below all other tokens.
   # This saves me having to exclude all of the other tokens
   # in this regex.
   :identifier => /\A([^\#\(\)\,\;\+\-\*\/\.\=\|\>\{\}\"0-9\s]+)/,
-
-  :space => /\A[\s\n]+/
 }
 
 SPECIAL_BEHAVIOURS = {
