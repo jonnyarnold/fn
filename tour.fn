@@ -1,0 +1,133 @@
+###### FN
+###### Feature Tour
+
+
+
+### Numbers
+# (Currently only integers are possible.)
+1
+1 + 2 # => 3
+5 - 3 # => 2
+2 * 2 # => 4
+4 / 2 # => 2
+
+
+
+### Strings
+"string"
+
+
+
+### Booleans
+true
+false
+
+# Following on from Python, Ruby, et al.:
+# - `or` will return the first true argument, or false is all are false.
+# - `and` will return the last true argument, or false if any are false.
+true and false # => false
+false or true  # => true
+
+# The not operator is a function. (More on functions later.)
+!(true) # => false
+!(false) and true # => true
+
+
+
+### Variables
+# 'Variables' cannot be redefined. This is declarative programming, yo.
+a = 1
+# a = 2 would throw an error.
+
+
+
+### Equality
+x = 1
+y = 2
+x eq y # => false
+
+
+
+### Functions
+# Functions are assigned to variables.
+# Function prototypes are values.
+add = (a,b) { a + b }
+add(2,3) # => 5
+
+
+
+### Built-in Functions
+# print() outputs to the console.
+print("Hello, world!")
+
+# !() is the NOT operator.
+!(false) # => true
+
+
+
+### Complex Data Structures: The Block
+# A Block is an object with attributes.
+block = {
+  foo = "foo"
+  bar = "bar"
+}
+
+# Attributes can be accessed using the dereference operator.
+block.foo
+block.bar
+
+# A block can be extended from outside.
+block.baz = "baz"
+block.baz
+
+# A block can nest other blocks.
+
+Utils = {
+  Math = {
+    pi = 3
+    area = (diameter) { pi * diameter }
+  }
+}
+
+Utils.Math.area(3) # => 9
+
+### Infix Operators
+# The following infix operators are defined (in order of precedence):
+# .       --- Dereference operator
+# =       --- Assignment operator
+# eq      --- Equality comparison
+# and or  --- Logical operators
+# + - * / --- Mathematical operations
+
+
+
+### Lists
+list = [1, "two", true]
+
+# Lists are accessed by calling it as if it were a function.
+list(1) # => "two"
+
+# Lists can be iterated over with the each() function.
+list.each((item) {
+  print(item)
+})
+
+
+
+### Comparison
+# Only one structure exists for comparison: `when`.
+# This serves the purpose of `if/unless/else` as well as `case`.
+#
+# A `when` includes a collection of branches, with a condition and a block.
+# `when` runs the first block whose condition is true.
+#
+# It is useful to add a `true` clause at the end to catch the case
+# where no branches are matched.
+guessMyNumber = (guess) {
+  when {
+    guess eq 42 { "You win!" }
+    true        { "Sorry, try again" }
+  }
+}
+
+guessMyNumber(42) # => "You win!"
