@@ -5,13 +5,12 @@ class Block
   attr_reader :defined_values, :call_proc
 
   GLOBALS = {
-    'true' => true,
-    'false' => false,
-
     '+' => lambda { |a,b| a + b },
     '*' => lambda { |a,b| a * b },
     '/' => lambda { |a,b| a / b },
     '-' => lambda { |a,b| a - b },
+    'and' => lambda { |a,b| a && b },
+    'or' => lambda { |a,b| a || b },
     # '=' is defined in .evaluate
     # '.' is defined in .evaluate
   }
@@ -96,6 +95,8 @@ class Block
       expr.value.to_i
     when 'StringExpr'
       expr.value.to_s
+    when 'BooleanExpr'
+      expr.value == 'true'
     when 'IdentifierExpr'
       # Identifier call!
       raise(FnRunError.new("Unknown identifier #{expr.name}")) unless @defined_values.key? expr.name

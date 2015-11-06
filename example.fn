@@ -29,6 +29,11 @@ bool = when {
   true { 0 }
 }
 
+true and true
+true or false
+false or true
+1 or false    # => 1
+
 cube = (x) { z = x*x*x; z }
 
 add(2, 3)

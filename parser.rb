@@ -1,6 +1,7 @@
 # Expressions
 NumberExpr = Struct.new(:value)
 StringExpr = Struct.new(:value)
+BooleanExpr = Struct.new(:value)
 IdentifierExpr = Struct.new(:name)
 
 FunctionCallExpr = Struct.new(:reference, :args)
@@ -15,7 +16,7 @@ ConditionalExpr = Struct.new(:branches)
 ConditionalBranchExpr = Struct.new(:condition, :body)
 
 # Strongest to weakest
-INFIX_PRECEDENCE = ['.', '=', '|>', '*', '/', '+', '-']
+INFIX_PRECEDENCE = ['.', '=', 'and', 'or', '*', '/', '+', '-']
 
 class Parser
 
@@ -65,7 +66,7 @@ class Parser
 
   def parse_primary
     expr = case current_token.type
-    when :identifier, :number, :string, :bracket_open, :block_open, :when
+    when :identifier, :number, :string, :boolean, :bracket_open, :block_open, :when
       parse_value
     when :use
       parse_use
@@ -98,7 +99,7 @@ class Parser
         else
           parse_identifier
         end
-      when :number, :string
+      when :number, :string, :boolean
         parse_literal
       when :bracket_open
         # This could be a bracketed value
@@ -313,6 +314,8 @@ class Parser
       parse_number
     when :string
       parse_string
+    when :boolean
+      parse_boolean
     else
       fail "parse_literal for #{current_token} failed."
     end
@@ -355,6 +358,10 @@ class Parser
 
   def parse_string
     shift_token_into!(StringExpr)
+  end
+
+  def parse_boolean
+    shift_token_into!(BooleanExpr)
   end
 
   def parse_identifier

@@ -13,7 +13,7 @@ GRAMMAR = {
   :when => /\Awhen/,
 
   # Infix operators
-  :infix_operator => /\A(\+|\-|\*|\/|\.|\=|\|\>)/,
+  :infix_operator => /\A(\+|\-|\*|\/|\.|\=|or|and)/,
 
   # Blocks
   :block_open => /\A\{/,
@@ -21,12 +21,11 @@ GRAMMAR = {
 
   #:list_open => /\A\[/,
   #:list_close => /\A\]/,
-  #:dict_open => /\A\{/,
-  #:dict_close => /\A\}/,
 
   # Value literals
   :string => /\A\"([^\"]*)\"/,
   :number => /\A([0-9]+)/,
+  :boolean => /\A(true|false)/,
 
   # :identifier should be below all other tokens.
   # This saves me having to exclude all of the other tokens
