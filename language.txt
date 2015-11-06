@@ -12,6 +12,9 @@ value => :bracket_open value :bracket_close
 value => infixOp
 value => functionPrototype
 value => block
+value => conditional
+
+conditional => :if value block (:else block)?
 
 block => :block_open primary+ :block_close
 

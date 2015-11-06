@@ -16,6 +16,12 @@ diff = (x, y) {
   z
 }
 
+say = (enter) {
+  if enter { "Hello" } else { "Goodbye" }
+}
+say(true)
+say(false)
+
 cube = (x) { z = x*x*x; z }
 
 add(2, 3)

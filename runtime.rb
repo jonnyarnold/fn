@@ -5,6 +5,8 @@ class Block
   attr_reader :defined_values, :call_proc
 
   GLOBALS = {
+    'true' => true,
+    'false' => false,
     '+' => lambda { |a,b| a + b },
     '*' => lambda { |a,b| a * b },
     '/' => lambda { |a,b| a / b },
@@ -95,13 +97,16 @@ class Block
       expr.value.to_s
     when 'IdentifierExpr'
       # Identifier call!
-      @defined_values[expr.name] || raise(FnRunError.new("Unknown identifier #{expr.name}"))
+      raise(FnRunError.new("Unknown identifier #{expr.name}")) unless @defined_values.key? expr.name
+      @defined_values[expr.name]
     when 'FunctionCallExpr'
       evaluate_function_call(expr)
     when 'FunctionPrototypeExpr'
       evaluate_function_prototype(expr)
     when 'BlockExpr'
       evaluate_block(expr)
+    when 'ConditionalExpr'
+      evaluate_condition(expr)
     when 'ImportExpr'
       @defined_values.merge!(@defined_values[expr.name].defined_values)
     else
@@ -165,6 +170,15 @@ class Block
 
     # Evaluate the function
     block_scope.evaluate_return_block(expr.body)
+  end
+
+  def evaluate_condition(expr)
+    result = evaluate(expr.condition)
+    if result
+      evaluate_return_last(expr.true_body.body)
+    elsif expr.false_body
+      evaluate_return_last(expr.false_body.body)
+    end
   end
 
 end

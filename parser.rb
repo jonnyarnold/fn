@@ -11,6 +11,8 @@ ImportExpr = Struct.new(:name)
 
 BlockExpr = Struct.new(:body)
 
+ConditionalExpr = Struct.new(:condition, :true_body, :false_body)
+
 # Strongest to weakest
 INFIX_PRECEDENCE = ['.', '=', '|>', '*', '/', '+', '-']
 
@@ -68,6 +70,10 @@ class Parser
       parse_use
     when :import
       parse_import
+    when :if
+      parse_if
+    when :unless
+      parse_unless
     else
       # For development only! This should just fail.
       puts "You cannot start an expression with #{current_token}!"
@@ -277,6 +283,25 @@ class Parser
     shift_token! # Eat :block_close
 
     expr_list
+  end
+
+  def parse_if
+    unless current_token.type == :if
+      fail "WTF? Expecting if, got #{current_token} in if statement!"
+    end
+
+    shift_token! # Eat :if
+
+    condition = parse_value
+    true_block = parse_block
+
+    # Check for an :else
+    if current_token.type == :else
+      shift_token! # Eat :else
+      false_block = parse_block
+    end
+
+    ConditionalExpr.new(condition, true_block, false_block)
   end
 
   def parse_literal
