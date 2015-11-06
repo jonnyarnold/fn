@@ -64,16 +64,12 @@ class Parser
 
   def parse_primary
     expr = case current_token.type
-    when :identifier, :number, :string, :bracket_open, :block_open
+    when :identifier, :number, :string, :bracket_open, :block_open, :if, :unless
       parse_value
     when :use
       parse_use
     when :import
       parse_import
-    when :if
-      parse_if
-    when :unless
-      parse_unless
     else
       # For development only! This should just fail.
       puts "You cannot start an expression with #{current_token}!"
@@ -118,6 +114,10 @@ class Parser
         end
       when :block_open
         parse_block
+      when :if
+        parse_if
+      when :unless
+        parse_unless
       else
         fail "parse_value called on non-value #{current_token}"
       end
@@ -299,6 +299,25 @@ class Parser
     if current_token.type == :else
       shift_token! # Eat :else
       false_block = parse_block
+    end
+
+    ConditionalExpr.new(condition, true_block, false_block)
+  end
+
+  def parse_unless
+    unless current_token.type == :unless
+      fail "WTF? Expecting unless, got #{current_token} in unless statement!"
+    end
+
+    shift_token! # Eat :unless
+
+    condition = parse_value
+    false_block = parse_block # If the condition is false, run the first block
+
+    # Check for an :else
+    if current_token.type == :else
+      shift_token! # Eat :else
+      true_block = parse_block
     end
 
     ConditionalExpr.new(condition, true_block, false_block)

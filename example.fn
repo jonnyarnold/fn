@@ -22,6 +22,8 @@ say = (enter) {
 say(true)
 say(false)
 
+bool = unless true { 0 } else { 1 }
+
 cube = (x) { z = x*x*x; z }
 
 add(2, 3)

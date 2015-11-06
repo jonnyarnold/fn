@@ -174,9 +174,9 @@ class Block
 
   def evaluate_condition(expr)
     result = evaluate(expr.condition)
-    if result
+    if result && expr.true_body
       evaluate_return_last(expr.true_body.body)
-    elsif expr.false_body
+    elsif (!result) && expr.false_body
       evaluate_return_last(expr.false_body.body)
     end
   end
