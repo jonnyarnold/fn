@@ -7,6 +7,7 @@ class Block
   GLOBALS = {
     'true' => true,
     'false' => false,
+
     '+' => lambda { |a,b| a + b },
     '*' => lambda { |a,b| a * b },
     '/' => lambda { |a,b| a / b },
@@ -173,11 +174,11 @@ class Block
   end
 
   def evaluate_condition(expr)
-    result = evaluate(expr.condition)
-    if result && expr.true_body
-      evaluate_return_last(expr.true_body.body)
-    elsif (!result) && expr.false_body
-      evaluate_return_last(expr.false_body.body)
+    expr.branches.each do |branch|
+      result = evaluate(branch.condition)
+      if result
+        return evaluate_return_last(branch.body.body)
+      end
     end
   end
 
