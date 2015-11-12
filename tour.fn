@@ -31,8 +31,8 @@ true and false # => false
 false or true  # => true
 
 # The not operator is a function. (More on functions later.)
-!(true) # => false
-!(false) and true # => true
+not(true) # => false
+not(false) and true # => true
 
 
 

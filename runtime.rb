@@ -5,11 +5,11 @@ class Block
   attr_reader :defined_values, :call_proc
 
   GLOBALS = {
-    '!' => lambda { |a| !a },
     '+' => lambda { |a,b| a + b },
     '*' => lambda { |a,b| a * b },
     '/' => lambda { |a,b| a / b },
     '-' => lambda { |a,b| a - b },
+    'not' => lambda { |a| !a },
     'and' => lambda { |a,b| a && b },
     'or' => lambda { |a,b| a || b },
     'eq' => lambda { |a,b| a == b },
