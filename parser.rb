@@ -69,7 +69,7 @@ class Parser
 
   def parse_primary
     expr = case current_token.type
-    when :identifier, :number, :string, :boolean, :bracket_open, :block_open, :when
+    when :identifier, :number, :string, :boolean, :bracket_open, :block_open, :when, :list_open
       parse_value
     when :use
       parse_use

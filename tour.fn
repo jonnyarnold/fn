@@ -62,9 +62,6 @@ add(2,3) # => 5
 # print() outputs to the console.
 print("Hello, world!")
 
-# !() is the NOT operator.
-!(false) # => true
-
 
 
 ### Complex Data Structures: The Block
@@ -132,4 +129,4 @@ guessMyNumber = (guess) {
   }
 }
 
-guessMyNumber(42) # => "You win!"
+print(guessMyNumber(42)) # => "You win!"
