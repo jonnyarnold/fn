@@ -81,7 +81,7 @@ class Block
 
     # If nothing is returned from the block,
     # return the whole block.
-    return_value || self
+    return_value.nil? ? self : return_value
   end
 
   def evaluate_return_block(exprs)
