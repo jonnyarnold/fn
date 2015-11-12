@@ -1,82 +1,61 @@
 class FnRunError < StandardError
 end
 
-class Block
-  attr_reader :defined_values, :call_proc
+# A Scope is a runtime environment that enfores lexical scoping.
+# Everything is a Scope in Fn.
+class Scope
+  attr_reader :scope_attributes
 
-  GLOBALS = {
-    '!' => lambda { |a| !a },
-    '+' => lambda { |a,b| a + b },
-    '*' => lambda { |a,b| a * b },
-    '/' => lambda { |a,b| a / b },
-    '-' => lambda { |a,b| a - b },
-    'and' => lambda { |a,b| a && b },
-    'or' => lambda { |a,b| a || b },
-    'eq' => lambda { |a,b| a == b },
-    'print' => lambda { |x| puts x.to_s },
-    # '=' is defined in .evaluate
-    # '.' is defined in .evaluate
-  }
-
-  def initialize(defined_values = nil, call_proc = nil)
-    set_defined_values(defined_values)
-    @call_proc = call_proc
-    @scope_values = {}
+  # Constructor.
+  # A parent Scope can be defined.
+  def initialize(parent)
+    @parent = parent
+    @scope_attributes = {}
   end
 
-  def set_defined_values(defined_values)
-    @defined_values = defined_values || GLOBALS
-    @defined_values['self'] = self
-
-    # Time for a hack!
-    if defined_values.nil?
-      @defined_values.merge!({
-        'HTTPServer' => Block.new(GLOBALS.merge({
-          'get' => lambda { |path, fn| nil },
-          'start!' => lambda { puts 'Server started. Kinda.' }
-        }))
-      })
-    end
-  end
-
-  def to_s(level=0)
-    level_spaces = ' ' * level
-    out = ''
-
-    out += "() " unless @call_proc.nil?
-
-    if @scope_values.length == 0
-      out += '{}'
-      return out
-    end
-
-    out += "{\n" + level_spaces
-    @scope_values.each do |k,v|
-      if v.is_a? Block
-        out += "  #{k} = #{v.to_s(level + 2)}\n" + level_spaces
-      else
-        out += "  #{k} = #{v}\n" + level_spaces
-      end
-    end
-    out += '}'
-
-    out
-  end
-
+  # Defines a new ID in this Scope.
+  #
+  # Scopes can redefine names in parent Scopes,
+  # but cannot redefine names in the current Scope.
   def assign(id, value)
-    raise FnRunError.new("Cannot redefine #{id}!") if @defined_values[id]
-    @defined_values[id] = value
-    @scope_values[id] = value
+    raise FnRunError.new("Cannot redefine #{id}!") if @scope_attributes[id]
+    @scope_attributes[id] = value
+
+    nil
   end
 
+  # Gets the value of the given ID.
+  def get(id)
+    value = attributes[id]
+    raise(FnRunError.new("Unknown identifier #{id}")) unless value
+
+    value
+  end
+
+  # Perform the function call specified in this Scope.
+  # Raises an error if no function has been defined.
   def call(*args)
-    @call_proc.call(*args)
+    proc = @scope_attributes['call'] 
+    raise FnRunError.new("Not callable. Define 'call'!") unless proc
+
+    proc.call(*args)
   end
 
-  def evaluate_return_last(exprs)
+  # Get the internal value of this scope.
+  def value
+    fail 'Asked for value on a non-value scope.'
+  end
+
+  # The attributes this Scope can access.
+  def attributes
+    parent_attributes.merge(scope_attributes)
+  end
+
+  # Evaluates the given expressions in the Scope.
+  def eval(exprs)
     return_value = nil
     exprs.each do |expr|
-      return_value = evaluate(expr)
+      return_value = eval_one(expr)
     end
 
     # If nothing is returned from the block,
@@ -84,28 +63,19 @@ class Block
     return_value || self
   end
 
-  def evaluate_return_block(exprs)
-    exprs.each do |expr|
-      evaluate(expr)
-    end
-
-    self
-  end
-
-  def evaluate(expr)
+  # Evaluates a single expression in the Scope.
+  def eval_one(expr)
     case expr.class.name
     when 'NumberExpr'
-      expr.value.to_f
+      NumberScope.new(self, expr.value.to_f)
     when 'StringExpr'
-      expr.value.to_s
+      StringScope.new(self, expr.value.to_s)
     when 'BooleanExpr'
-      expr.value == 'true'
+      ValueScope.new(self, expr.value == 'true')
     when 'ListExpr'
       evaluate_list(expr)
     when 'IdentifierExpr'
-      # Identifier call!
-      raise(FnRunError.new("Unknown identifier #{expr.name}")) unless @defined_values.key? expr.name
-      @defined_values[expr.name]
+      get(expr.name)
     when 'FunctionCallExpr'
       evaluate_function_call(expr)
     when 'FunctionPrototypeExpr'
@@ -115,15 +85,22 @@ class Block
     when 'ConditionalExpr'
       evaluate_condition(expr)
     when 'ImportExpr'
-      @defined_values.merge!(@defined_values[expr.name].defined_values)
+      @scope_attributes.merge!(@scope_attributes[expr.name].scope_attributes)
     else
       puts "I can't evaluate a #{expr.class}!"
     end
   end
 
+  protected
+
+  # The attributes of the parent.
+  def parent_attributes
+    @parent ? @parent.attributes : {}
+  end
+
   def evaluate_list(expr)
-    values = expr.values.map { |v| evaluate(v) }
-    List.new(values)
+    values = expr.values.map { |v| eval_one(v) }
+    ListScope.new(self, values)
   end
 
   def evaluate_function_call(expr)
@@ -132,99 +109,196 @@ class Block
 
     # Special case: assignment
     if name == '='
-      assign(expr.args[0].name, evaluate(expr.args[1]))
+      assign(expr.args[0].name, eval_one(expr.args[1]))
     # Special case: dereference
     elsif name == '.'
-      scope = evaluate(expr.args[0])
-      raise FnRunError.new("Non-block on left-hand side of `.`") unless scope.is_a? Block
+      scope = eval_one(expr.args[0])
+      raise FnRunError.new("Cannot dereference #{expr.args[0].to_s}!") unless scope.is_a? Scope
 
-      scope.evaluate(expr.args[1])
+      scope.eval_one(expr.args[1])
     else
-      f = @defined_values[expr.reference.name]
-      raise FnRunError.new("#{name} is not a function") unless callable?(f)
+      f = attributes[expr.reference.name]
+      raise FnRunError.new("#{name} is not a function") if f.nil? || !f.callable?
 
-      f.call(*expr.args.map { |arg| evaluate(arg) })
+      f.call(*expr.args.map { |arg| eval_one(arg) })
     end
   end
 
   # Callable is:
   #  - A lambda (built-in)
   #  - A Block with a call_proc
-  def callable?(obj)
-    # Both of these objects response do call
-    return true if obj.respond_to? :call
+  def callable?
+    !@scope_attributes['call'].nil?
   end
 
   def evaluate_function_prototype(expr)
-    Block.new(@defined_values, lambda do |*call_args|
+    scope = Scope.new(self)
+    scope.assign('call', fnfn do |*call_args|
       arg_ids = expr.args
       unless arg_ids.length == call_args.length
         raise FnRunError.new("Expected #{arg_ids.length} args, got #{call_args.length}")
       end
 
-      body = expr.body
-
-      # Setup function scope
-      arg_scope = arg_ids.each_with_index.reduce({}) do |memo, (arg, idx)|
-        memo[arg.name] = call_args[idx]
-        memo
+      # Define the function scope with the arguments defined
+      function_scope = Scope.new(self)
+      arg_ids.each_with_index do |arg, idx|
+        function_scope.assign(arg.name, call_args[idx])
       end
 
-      function_scope = Block.new(@defined_values.merge(arg_scope))
-
       # Evaluate the function
-      function_scope.evaluate_return_last(expr.body)
+      function_scope.eval(expr.body)
     end)
+
+    scope
   end
 
   def evaluate_block(expr)
-    block_scope = Block.new(@defined_values)
+    block_scope = Scope.new(self)
 
     # Evaluate the function
-    block_scope.evaluate_return_block(expr.body)
+    block_scope.eval(expr.body)
   end
 
   def evaluate_condition(expr)
     expr.branches.each do |branch|
-      result = evaluate(branch.condition)
+      result = eval_one(branch.condition)
       if result
-        return evaluate_return_last(branch.body.body)
+        return eval(branch.body.body)
       end
     end
+  end
+end
+
+# A Scope that wraps a Ruby lambda.
+class FunctionScope < Scope
+  def initialize(proc)
+    super(nil)
+    @proc = proc
+  end
+
+  # Override call to use the Ruby proc instead.
+  def call(*args)
+    @proc.call(*args)
+  end
+
+  def callable?
+    true
+  end
+end
+
+# Alias
+def fnfn(&block)
+  FunctionScope.new(block)
+end
+
+# The Scope that is defined when a file or REPL is loaded.
+class TopLevelScope < Scope
+
+  # A TopLevelScope has no Parent.
+  # (This makes writing this class hard!)
+  def initialize
+    super(nil)
+
+    # Globals
+    @scope_attributes = {
+      '!' => fnfn { |a| !a },
+      '+' => fnfn { |a,b| a+b },
+      '-' => fnfn { |a,b| a-b },
+      '*' => fnfn { |a,b| a*b },
+      '/' => fnfn { |a,b| a/b },
+      'and' => fnfn { |a,b| a && b },
+      'or' => fnfn { |a,b| a || b },
+      'eq' => fnfn { |a,b| a == b },
+      'print' => fnfn { |a| puts a.to_s },
+    }
   end
 
 end
 
-class List < Block
+# A Scope that wraps a Ruby value.
+class ValueScope < Scope
+  attr_reader :value
 
-  def initialize(values)
-    @values = values
-
-    super(
-      nil,
-      # If called as a function, a list will return the value
-      # at the given index.
-      lambda { |i| @values[i] }
-    )
-
-    @defined_values.merge!(
-      # List built-ins
-      'first' => @values.first,
-      'last' => @values.last,
-      'each' => lambda { |fn| each(fn) },
-    )
+  def initialize(parent, value)
+    super(parent)
+    @value = value
   end
 
   def to_s
-    @values.to_s
+    value
+  end
+
+end
+
+# Scope wrapper around Numeric.
+class NumberScope < ValueScope
+
+  def initialize(parent, rb_number)
+    super(parent, rb_number)
+
+    # Number methods
+    @scope_attributes = {}
+  end
+
+  def +(other)
+    NumberScope.new(@parent, value + other.value)
+  end
+
+  def -(other)
+    NumberScope.new(@parent, value - other.value)
+  end
+
+  def *(other)
+    NumberScope.new(@parent, value * other.value)
+  end
+
+  def /(other)
+    NumberScope.new(@parent, value / other.value)
+  end
+
+end
+
+# Scope wrapper around String.
+class StringScope < ValueScope
+
+  def initialize(parent, rb_string)
+    super(parent, rb_string)
+
+    # String methods
+    @scope_attributes = {}
+  end
+
+end
+
+# Scope wrapper around List.
+class ListScope < ValueScope
+
+  def initialize(parent, rb_list)
+    super(parent, rb_list)
+
+    # List methods
+    @scope_attributes = {
+      'first' => @value.first,
+      'last' => @value.last,
+      'each' => fnfn { |fn| each(fn) },
+      'call' => fnfn { |idx| at(idx) },
+    }
+  end
+
+  def at(idx)
+    @value[idx.value]
   end
 
   def each(fn)
-    @values.each do |v|
+    @value.each do |v|
       fn.call(v)
     end
 
-    # We return an Empty Block to avoid re-printing the values
-    Block.new
+    # We return an Empty Scope to avoid chaining
+    Scope.new(nil)
+  end
+
+  def to_s
+    @value.map { |v| v.to_s }.to_s
   end
 end

@@ -110,9 +110,7 @@ list = [1, "two", true]
 list(1) # => "two"
 
 # Lists can be iterated over with the each() function.
-list.each((item) {
-  print(item)
-})
+list.each((item) { print(item) })
 
 
 

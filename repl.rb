@@ -5,17 +5,17 @@ require './runtime'
 def execute(runtime, line)
   tokens = Tokeniser.tokenise(line)
   tree = Parser.parse(tokens)
-  runtime.evaluate_return_last(tree)
+  runtime.eval(tree)
 end
 
-runtime = Block.new
+runtime = TopLevelScope.new
 
 loop do
   print '> '
   line = gets.chomp
 
   begin
-    puts execute(runtime, line)
+    puts execute(runtime, line).to_s
   rescue FnRunError => e
     puts e
   end
