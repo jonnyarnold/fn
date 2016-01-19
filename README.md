@@ -19,6 +19,8 @@ If you run `ruby interpreter.rb` the file `tour.fn` will be run.
 
 If you run `ruby repl.rb` you can try typing on a very basic REPL! (How basic? Well, it evaluates as soon as you press enter, so make sure you get the whole expression on a single line!)
 
+**This project has been neglected in favour of [fn-go](https://github.com/jonnyarnold/fn-go), so go there if you're *really* interested!**
+
 ## Usage
 
 Please don't. It doesn't have some basic things yet (like floats).
